@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Presentasi: Struktur Kontrol Percabangan PHP (Fase E RPL)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #8b5cf6;
+      --bg-dark: #0f172a;
+      --bg-card-dark: #1e293b;
+      --bg-light: #f8fafc;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --border-light: #e2e8f0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #090d16;
+      color: #0f172a;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+    /* Presentation Stage */
+    .stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+    }
+    .slide-viewport {
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 9;
+      background: var(--bg-light);
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 40px 48px;
+      display: none;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .slide.active {
+      display: flex;
+      opacity: 1;
+    }
+    /* Dark slide variant */
+    .slide.dark-slide {
+      background: var(--bg-dark);
+      color: #ffffff;
+    }
+    /* Slide Header */
+    .slide-header {
+      margin-bottom: 24px;
+    }
+    .tag-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--primary);
+      background: #dbeafe;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+    }
+    .dark-slide .tag-badge {
+      background: rgba(37, 99, 235, 0.25);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+    .slide-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+    .dark-slide .slide-title {
+      color: #ffffff;
+    }
+    .slide-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .dark-slide .slide-subtitle {
+      color: #94a3b8;
+    }
+    /* Grid & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      flex: 1;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      flex: 1;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .dark-slide .card {
+      background: var(--bg-card-dark);
+      border-color: #334155;
+      color: #f1f5f9;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-body {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #334155;
+      flex: 1;
+    }
+    .dark-slide .card-body {
+      color: #cbd5e1;
+    }
+    /* Code Blocks */
+    pre, code {
+      font-family: 'Fira Code', monospace;
+    }
+    pre {
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-x: auto;
+      border: 1px solid #334155;
+      margin-top: 10px;
+    }
+    .code-hl {
+      color: #38bdf8;
+    }
+    .code-str {
+      color: #4ade80;
+    }
+    .code-num {
+      color: #fbbf24;
+    }
+    .code-com {
+      color: #94a3b8;
+      font-style: italic;
+    }
+    /* Alert / Callout */
+    .callout {
+      border-left: 4px solid var(--primary);
+      background: #eff6ff;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 16px;
+      font-size: 14px;
+      color: #1e40af;
+    }
+    .callout-amber {
+      border-left-color: var(--accent-amber);
+      background: #fefce8;
+      color: #854d0e;
+    }
+    .callout-green {
+      border-left-color: var(--accent-green);
+      background: #ecfdf5;
+      color: #065f46;
+    }
+    /* Bottom Controls */
+    .controls {
+      height: 60px;
+      background: #0b1120;
+      border-top: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+    .btn {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+    .counter {
+      font-weight: 700;
+      color: #f1f5f9;
+      background: #1e293b;
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stage">
+    <div class="slide-viewport">
+
+      <!-- SLIDE 1: COVER -->
+      <div class="slide dark-slide active">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 900px;">
+          <span class="tag-badge">PEMBELAJARAN MENDALAM • DEEP LEARNING</span>
+          <h1 style="font-size: 38px; font-weight: 800; line-height: 1.15; margin: 12px 0 6px 0; color: #ffffff;">
+            STRUKTUR KONTROL PERCABANGAN
+          </h1>
+          <h2 style="font-size: 26px; font-weight: 700; color: #38bdf8; margin-bottom: 20px;">
+            BAHASA PEMROGRAMAN PHP
+          </h2>
+          <p style="font-size: 16px; color: #94a3b8; margin-bottom: 32px;">
+            Elemen: <strong>Pemrograman Terstruktur</strong> | Model: <strong>Project-Based Learning (PjBL)</strong> Berdiferensiasi
+          </p>
+          <div class="card" style="background: rgba(30, 41, 59, 0.8); border-color: #334155;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px; color: #cbd5e1;">
+              <div><strong>Konsentrasi:</strong> Rekayasa Perangkat Lunak (RPL)</div>
+              <div><strong>Fase / Durasi:</strong> Fase E (Kelas X) • 2 JP (90 Menit)</div>
+              <div><strong>Kelompok:</strong> Gold (Basic) • Platinum (Interm.) • Diamond (Adv.)</div>
+              <div><strong>Guru Pamong:</strong> Tim Pengajar RPL / Arie</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: MINDFUL & K3LH -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">KEGIATAN AWAL • 15 MENIT</span>
+          <h2 class="slide-title">Awal Berkesadaran: Mindful Learning & K3LH</h2>
+          <p class="slide-subtitle">Menyiapkan raga, pikiran, dan keselamatan kerja sebelum sesi koding dimulai</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-title" style="color: var(--primary);">1. Mindful Breathing (Teknik STOP)</h3>
+            <div class="card-body">
+              <p>Luangkan 1 menit untuk bernapas sadar dan menata fokus mental:</p>
+              <ul style="margin: 12px 0 12px 20px; line-height: 1.7;">
+                <li><strong>S (Stop):</strong> Hentikan sejenak obrolan & distraksi.</li>
+                <li><strong>T (Take a breath):</strong> Tarik napas dalam perlahan.</li>
+                <li><strong>O (Observe):</strong> Rasakan ketenangan dan kesiapan mental.</li>
+                <li><strong>P (Proceed):</strong> Siap belajar koding dengan konsentrasi penuh.</li>
+              </ul>
+              <div class="callout-green callout">
+                Mengurangi kecemasan koding <em>(Syntax Error Anxiety)</em> dan meningkatkan daya nalar kritis.
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="card-title" style="color: var(--accent-green);">2. K3LH di Lab Komputer</h3>
+            <div class="card-body">
+              <p>Budaya kerja industri yang wajib ditaati programmer:</p>
+              <ul style="margin: 12px 0 12px 20px; line-height: 1.7;">
+                <li><strong>Postur Ergonomis:</strong> Duduk tegak, siku tangan 90° sejajar keyboard.</li>
+                <li><strong>Jarak Aman Mata:</strong> Minimal 45 - 60 cm dari layar monitor.</li>
+                <li><strong>Keamanan Kelistrikan:</strong> Jangan sentuh terminal kabel terbuka.</li>
+                <li><strong>Kebersihan Meja:</strong> Bebas dari makanan & botol air minum terbuka.</li>
+              </ul>
+              <div class="callout-amber callout">
+                Kesehatan fisik terjaga = Koding nyaman dan bebas cidera berulang!
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: APERSEPSI -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">APERSEPSI & PEMANTIK</span>
+          <h2 class="slide-title">Mengapa Komputer Membutuhkan Percabangan?</h2>
+          <p class="slide-subtitle">Menghubungkan logika pengambilan keputusan sehari-hari dengan instruksi kode mesin</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-title" style="color: var(--primary);">Kasus 1: Kasir Swalayan Otomatis</h3>
+            <div class="card-body">
+              <p style="font-style: italic; color: #475569; margin-bottom: 12px;">
+                "Selamat! Karena total belanjaan Anda di atas Rp 100.000, Anda berhak mendapatkan minyak goreng gratis!"
+              </p>
+              <p><strong>Pertanyaan Kritis:</strong></p>
+              <ul style="margin: 8px 0 16px 20px;">
+                <li>Bagaimana komputer kasir tahu kapan harus mencetak promo gratis?</li>
+                <li>Apa yang terjadi jika total belanjaan hanya Rp 99.000?</li>
+              </ul>
+              <div class="callout">
+                Ada instruksi <strong>PENGUJIAN KONDISI LOGIKA</strong> yang mengevaluasi nilai nominal belanja!
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="card-title" style="color: var(--accent-amber);">Kasus 2: Login Akun Media Sosial</h3>
+            <div class="card-body">
+              <p>Ketika memasukkan Username & Password di Instagram:</p>
+              <ul style="margin: 12px 0 16px 20px;">
+                <li><strong style="color: var(--accent-green);">JIKA Benar:</strong> Masuk ke halaman Beranda Utama.</li>
+                <li><strong style="color: var(--accent-red);">JIKA Salah:</strong> Muncul pesan peringatan error.</li>
+              </ul>
+              <p style="font-size: 13px; color: #64748b;">
+                Perangkat lunak tidak boleh berjalan lurus kaku; ia harus cerdas mengambil keputusan berdasarkan input pengguna.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: CP & TP -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">CAPAIAN & TUJUAN</span>
+          <h2 class="slide-title">Target Pembelajaran Hari Ini</h2>
+          <p class="slide-subtitle">Kompetensi yang akan dicapai dalam 2 x 45 menit pembelajaran</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px; flex: 1;">
+          <div class="callout" style="margin: 0;">
+            <strong>Capaian Pembelajaran (CP) - Pemrograman Terstruktur:</strong><br>
+            <em>"Peserta didik mampu menerapkan pemrograman terstruktur, meliputi pemahaman logika pemrograman, tipe data, struktur kontrol percabangan, perulangan, dan fungsi untuk memecahkan masalah."</em>
+          </div>
+          <div class="callout-green callout" style="margin: 0;">
+            <strong>Tujuan Pembelajaran (TP):</strong><br>
+            Peserta didik mampu menerapkan struktur kontrol percabangan menggunakan bahasa pemrograman PHP untuk memecahkan studi kasus nyata.
+          </div>
+          <div class="card" style="flex: 1;">
+            <h4 style="margin-bottom: 8px;">Kriteria Ketercapaian (KKTP):</h4>
+            <ol style="margin-left: 20px; font-size: 13.5px; line-height: 1.7; color: #334155;">
+              <li>Menjelaskan konsep dan varian sintaks percabangan (<code>if</code>, <code>if-else</code>, <code>elseif</code>, <code>nested if</code>) di PHP.</li>
+              <li>Merancang diagram alir (<em>flowchart</em>) alur logika keputusan program.</li>
+              <li>Mengetikkan skrip PHP sesuai studi kasus kelompok (Gold, Platinum, Diamond).</li>
+              <li>Melakukan pengujian (*testing*) dan *debugging* hingga program berjalan lancar di localhost.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: ASESMEN AWAL -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">DIAGNOSTIK KOGNITIF • 5 MENIT</span>
+          <h2 class="slide-title">Asesmen Awal: 5 Soal Pemahaman Logika</h2>
+          <p class="slide-subtitle">Uji cepat untuk mengelompokkan ke tier proyek diferensiasi (Bukan untuk nilai rapor!)</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 12px;">Soal 1 s.d. 3</h4>
+            <p style="font-size: 13px; line-height: 1.6;">
+              <strong>1. Tipe data PHP yang hanya bernilai TRUE / FALSE?</strong><br>
+              A. Integer &nbsp;&nbsp; B. String &nbsp;&nbsp; <strong style="color:var(--accent-green);">C. Boolean</strong><br><br>
+              <strong>2. Operator pembanding KESETARAAN nilai?</strong><br>
+              A. = &nbsp;&nbsp; <strong style="color:var(--accent-green);">B. ==</strong> &nbsp;&nbsp; C. != &nbsp;&nbsp; D. =><br><br>
+              <strong>3. $nilai = 75; if ($nilai >= 70) { echo "Lulus"; }?</strong><br>
+              <strong style="color:var(--accent-green);">A. Lulus</strong> &nbsp;&nbsp; B. Tidak Lulus &nbsp;&nbsp; C. Error
+            </p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 12px;">Soal 4 & 5 + Kunci</h4>
+            <p style="font-size: 13px; line-height: 1.6;">
+              <strong>4. $umur = 15; if ($umur >= 17) { ... } else { ... }?</strong><br>
+              A. Boleh buat SIM &nbsp;&nbsp; <strong style="color:var(--accent-green);">B. Belum cukup umur</strong><br><br>
+              <strong>5. Operator logika syarat "Kondisi A DAN Kondisi B"?</strong><br>
+              A. || &nbsp;&nbsp; <strong style="color:var(--accent-green);">B. &&</strong> &nbsp;&nbsp; C. !
+            </p>
+            <div class="callout-amber callout" style="margin-top: 14px;">
+              <strong>Hasil Pembagian:</strong><br>
+              • Benar 0 - 2 -> <strong>Gold (Basic)</strong><br>
+              • Benar 3 -> <strong>Platinum (Intermediate)</strong><br>
+              • Benar 4 - 5 -> <strong>Diamond (Advance)</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: 3 TIER KELOMPOK -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">DIFERENSIASI KONTEN</span>
+          <h2 class="slide-title">3 Kelompok Diferensiasi Belajar</h2>
+          <p class="slide-subtitle">Setiap murid belajar sesuai zona perkembangan dan kesiapan pemahaman masing-masing</p>
+        </div>
+        <div class="grid-3">
+          <div class="card" style="border-top: 5px solid var(--accent-amber); background: #fefce8;">
+            <h3 style="color: #a16207; font-size: 18px; margin-bottom: 6px;">TIER 1: GOLD</h3>
+            <span style="font-size: 12px; color: #854d0e; font-weight: 700;">Skor: 0 - 40 (Basic)</span>
+            <div style="font-size: 13px; color: #713f12; margin-top: 14px; line-height: 1.6;">
+              <p><strong>Fokus Proyek:</strong><br>Sistem Kelulusan Siswa (1 - 2 Kondisi <code>if</code> dan <code>if-else</code>).</p>
+              <p style="margin-top: 10px;"><strong>Bimbingan:</strong><br>Scaffolding tinggi, template kode disediakan lengkap, didampingi guru secara intensif.</p>
+            </div>
+          </div>
+          <div class="card" style="border-top: 5px solid #64748b; background: #f8fafc;">
+            <h3 style="color: #334155; font-size: 18px; margin-bottom: 6px;">TIER 2: PLATINUM</h3>
+            <span style="font-size: 12px; color: #475569; font-weight: 700;">Skor: 50 - 70 (Intermediate)</span>
+            <div style="font-size: 13px; color: #334155; margin-top: 14px; line-height: 1.6;">
+              <p><strong>Fokus Proyek:</strong><br>Sistem Kasir Diskon Swalayan (Multi-kondisi <code>if...elseif...else</code>).</p>
+              <p style="margin-top: 10px;"><strong>Bimbingan:</strong><br>Bimbingan parsial, merancang flowchart mandiri bersama rekan sekelompok.</p>
+            </div>
+          </div>
+          <div class="card" style="border-top: 5px solid var(--accent-green); background: #ecfdf5;">
+            <h3 style="color: #047857; font-size: 18px; margin-bottom: 6px;">TIER 3: DIAMOND</h3>
+            <span style="font-size: 12px; color: #065f46; font-weight: 700;">Skor: 80 - 100 (Advance)</span>
+            <div style="font-size: 13px; color: #064e3b; margin-top: 14px; line-height: 1.6;">
+              <p><strong>Fokus Proyek:</strong><br>Sistem Billing Parkir Bertingkat (<em>Nested If</em> & Validasi Error Input).</p>
+              <p style="margin-top: 10px;"><strong>Bimbingan:</strong><br>Eksplorasi mandiri, Clean Code, dan menjadi tutor sebaya bagi teman.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7: PEMROGRAMAN TERSTRUKTUR -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">KONSEP TEORI DASAR</span>
+          <h2 class="slide-title">3 Struktur Kendali Pemrograman Terstruktur</h2>
+          <p class="slide-subtitle">Fondasi algoritma komputer dalam memecahkan masalah secara sistematis</p>
+        </div>
+        <div class="grid-3">
+          <div class="card">
+            <h3 style="color: var(--primary); font-size: 16px; margin-bottom: 8px;">1. Runtunan (Sequence)</h3>
+            <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+              Instruksi dieksekusi berurutan baris demi baris dari atas ke bawah tanpa lompatan.
+            </p>
+            <pre><code><span class="code-hl">$p</span> = <span class="code-num">10</span>;
+<span class="code-hl">$l</span> = <span class="code-num">5</span>;
+<span class="code-hl">$luas</span> = <span class="code-hl">$p</span> * <span class="code-hl">$l</span>;
+<span class="code-hl">echo</span> <span class="code-hl">$luas</span>;</code></pre>
+          </div>
+          <div class="card" style="background: #eff6ff; border-color: #bfdbfe;">
+            <h3 style="color: var(--primary-dark); font-size: 16px; margin-bottom: 8px;">2. Percabangan (Selection)</h3>
+            <p style="font-size: 13px; color: #1e3a8a; line-height: 1.6;">
+              <strong>Fokus Hari Ini:</strong> Memilih jalur eksekusi berdasarkan evaluasi kondisi Boolean (True/False).
+            </p>
+            <pre><code><span class="code-hl">if</span> (<span class="code-hl">$nilai</span> >= <span class="code-num">75</span>) {
+    <span class="code-hl">echo</span> <span class="code-str">"Lulus"</span>;
+} <span class="code-hl">else</span> {
+    <span class="code-hl">echo</span> <span class="code-str">"Remedial"</span>;
+}</code></pre>
+          </div>
+          <div class="card">
+            <h3 style="color: #64748b; font-size: 16px; margin-bottom: 8px;">3. Perulangan (Iteration)</h3>
+            <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+              Mengeksekusi instruksi berulang kali selama kondisi bernilai benar (Pertemuan berikutnya).
+            </p>
+            <pre><code><span class="code-hl">for</span> (<span class="code-hl">$i</span>=<span class="code-num">1</span>; <span class="code-hl">$i</span><=<span class="code-num">5</span>; <span class="code-hl">$i</span>++) {
+    <span class="code-hl">echo</span> <span class="code-hl">$i</span>;
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 8: OPERATOR PHP -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">SINTAKS PHP</span>
+          <h2 class="slide-title">Operator Relasional & Logika di PHP</h2>
+          <p class="slide-subtitle">Simbol penentu nilai kebenaran (Boolean: True atau False)</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 8px;">Operator Pembanding (Relasional):</h4>
+            <div style="font-size: 13px; line-height: 1.8; color: #334155;">
+              <code>==</code> : Sama dengan nilai (<code>$a == $b</code>)<br>
+              <code>===</code> : Identik nilai & tipe data (<code>$a === $b</code>)<br>
+              <code>!=</code> : Tidak sama dengan (<code>$a != $b</code>)<br>
+              <code>></code> / <code><</code> : Lebih besar / Lebih kecil<br>
+              <code>>=</code> / <code><=</code> : Lebih besar sama / Lebih kecil sama
+            </div>
+            <div class="callout-amber callout" style="margin-top: 12px; font-size: 12px;">
+              <strong>Peringatan Kritis:</strong> Jangan tertukar antara <code>=</code> (mengisi nilai) dan <code>==</code> (membandingkan nilai)!
+            </div>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green); margin-bottom: 8px;">Operator Logika Majemuk:</h4>
+            <div style="font-size: 13px; line-height: 1.8; color: #334155;">
+              <p><strong>&& (AND):</strong> Wajib KEDUA kondisi bernilai True.</p>
+              <pre><code><span class="code-hl">if</span> (<span class="code-hl">$nilai</span> >= <span class="code-num">75</span> && <span class="code-hl">$absen</span> >= <span class="code-num">80</span>)</code></pre>
+              <p style="margin-top: 10px;"><strong>|| (OR):</strong> Cukup SALAH SATU kondisi True.</p>
+              <pre><code><span class="code-hl">if</span> (<span class="code-hl">$isMember</span> == <span class="code-hl">true</span> || <span class="code-hl">$total</span> >= <span class="code-num">500000</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9: IF & IF ELSE -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">STRUKTUR 1</span>
+          <h2 class="slide-title">Percabangan Tunggal (if) & Ganda (if...else)</h2>
+          <p class="slide-subtitle">Pilihan aksi dasar dalam PHP untuk menangani satu atau dua alternatif kondisi</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: var(--primary);">Percabangan Tunggal (if)</h4>
+            <p style="font-size: 13px; color: #475569; margin: 8px 0;">
+              Hanya mengeksekusi aksi jika kondisi bernilai TRUE. Jika FALSE, dilewati begitu saja.
+            </p>
+            <pre><code><span class="code-hl">$totalBelanja</span> = <span class="code-num">120000</span>;
+
+<span class="code-hl">if</span> (<span class="code-hl">$totalBelanja</span> >= <span class="code-num">100000</span>) {
+    <span class="code-hl">echo</span> <span class="code-str">"Dapat Kupon Undian!"</span>;
+}</code></pre>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green);">Percabangan Ganda (if...else)</h4>
+            <p style="font-size: 13px; color: #475569; margin: 8px 0;">
+              Menyediakan dua alternatif: Blok <code>if</code> jika True, blok <code>else</code> jika False.
+            </p>
+            <pre><code><span class="code-hl">$nilai</span> = <span class="code-num">68</span>;
+
+<span class="code-hl">if</span> (<span class="code-hl">$nilai</span> >= <span class="code-num">75</span>) {
+    <span class="code-hl">echo</span> <span class="code-str">"Kompeten / Lulus"</span>;
+} <span class="code-hl">else</span> {
+    <span class="code-hl">echo</span> <span class="code-str">"Belum Kompeten (Remedial)"</span>;
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 10: IF ELSEIF ELSE -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">STRUKTUR 2</span>
+          <h2 class="slide-title">Percabangan Bertingkat (if...elseif...else)</h2>
+          <p class="slide-subtitle">Mengevaluasi serangkaian kondisi berjenjang dari atas ke bawah</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 10px;">Alur Evaluasi Berjenjang:</h4>
+            <ol style="margin-left: 20px; font-size: 13.5px; line-height: 1.7; color: #334155;">
+              <li>PHP mengecek kondisi 1 paling atas.</li>
+              <li>Jika False, berlanjut mengecek <code>elseif</code> berikutnya.</li>
+              <li>Begitu ada yang True, blok dieksekusi dan percabangan langsung selesai.</li>
+              <li>Jika semua False, blok <code>else</code> terakhir yang dijalankan.</li>
+            </ol>
+            <div class="callout-amber callout" style="margin-top: 14px;">
+              <strong>Tips Logika:</strong> Urutkan kondisi dari angka batas terbesar ke terkecil agar tidak terjadi benturan logika!
+            </div>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green); margin-bottom: 8px;">Contoh Konversi Nilai Siswa:</h4>
+            <pre><code><span class="code-hl">$skor</span> = <span class="code-num">84</span>;
+
+<span class="code-hl">if</span> (<span class="code-hl">$skor</span> >= <span class="code-num">90</span>) {
+    <span class="code-hl">$grade</span> = <span class="code-str">"A (Sangat Baik)"</span>;
+} <span class="code-hl">elseif</span> (<span class="code-hl">$skor</span> >= <span class="code-num">80</span>) {
+    <span class="code-hl">$grade</span> = <span class="code-str">"B (Baik)"</span>;
+} <span class="code-hl">elseif</span> (<span class="code-hl">$skor</span> >= <span class="code-num">70</span>) {
+    <span class="code-hl">$grade</span> = <span class="code-str">"C (Cukup)"</span>;
+} <span class="code-hl">else</span> {
+    <span class="code-hl">$grade</span> = <span class="code-str">"D (Kurang)"</span>;
+}
+<span class="code-hl">echo</span> <span class="code-str">"Grade: "</span> . <span class="code-hl">$grade</span>;</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 11: NESTED IF -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">STRUKTUR 3</span>
+          <h2 class="slide-title">Percabangan Bersarang (Nested If)</h2>
+          <p class="slide-subtitle">Struktur percabangan di dalam percabangan untuk keputusan bertingkat</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: var(--accent-purple); margin-bottom: 10px;">Kapan Nested If Digunakan?</h4>
+            <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+              Ketika sebuah keputusan lanjutan HANYA diuji setelah keputusan sebelumnya dinyatakan lolos verifikasi.
+            </p>
+            <p style="font-size: 13px; color: #334155; margin-top: 10px;">
+              <strong>Contoh Riil Industri:</strong><br>
+              1. Cek kecocokan Username & Password.<br>
+              2. JIKA cocok, periksa Role Pengguna (Admin vs Kasir).<br>
+              3. JIKA salah sejak awal, tolak akses dan jangan periksa role!
+            </p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green); margin-bottom: 8px;">Contoh Kode PHP Nested If:</h4>
+            <pre><code><span class="code-hl">$loginSukses</span> = <span class="code-hl">true</span>;
+<span class="code-hl">$role</span> = <span class="code-str">"Admin"</span>;
+
+<span class="code-hl">if</span> (<span class="code-hl">$loginSukses</span>) {
+    <span class="code-com">// Percabangan di dalam percabangan</span>
+    <span class="code-hl">if</span> (<span class="code-hl">$role</span> == <span class="code-str">"Admin"</span>) {
+        <span class="code-hl">echo</span> <span class="code-str">"Buka Panel Admin"</span>;
+    } <span class="code-hl">else</span> {
+        <span class="code-hl">echo</span> <span class="code-str">"Buka Halaman Kasir"</span>;
+    }
+} <span class="code-hl">else</span> {
+    <span class="code-hl">echo</span> <span class="code-str">"Kombinasi Akun Salah!"</span>;
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 12: PjBL INTRO -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">KEGIATAN INTI • 60 MENIT</span>
+          <h2 class="slide-title">Mini Proyek PjBL: Sesi Koding Tim</h2>
+          <p class="slide-subtitle">Menyelesaikan tantangan studi kasus industri menggunakan Visual Studio Code dan XAMPP</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px; flex: 1;">
+          <div class="callout" style="margin: 0;">
+            <strong>Pembagian Peran dalam Tim (3 - 4 Siswa):</strong><br>
+            • <strong>Project Lead:</strong> Memimpin jalannya tim & memastikan waktu.<br>
+            • <strong>Logic Designer:</strong> Menggambar diagram alir (<em>flowchart</em>) logika di LKM.<br>
+            • <strong>Coder:</strong> Mengetik sintaks PHP di Visual Studio Code.<br>
+            • <strong>Tester:</strong> Menguji berbagai skenario input di browser & mencatat hasil.
+          </div>
+          <div class="card" style="flex: 1;">
+            <h4 style="margin-bottom: 8px;">Linimasa Pengerjaan (Total 45 Menit):</h4>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; text-align: center;">
+              <div style="background: #f1f5f9; padding: 14px; border-radius: 8px;">
+                <div style="font-weight: 800; font-size: 16px; color: var(--primary);">10 Menit</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Desain Flowchart di LKM</div>
+              </div>
+              <div style="background: #eff6ff; padding: 14px; border-radius: 8px;">
+                <div style="font-weight: 800; font-size: 16px; color: var(--primary);">20 Menit</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Koding di VS Code</div>
+              </div>
+              <div style="background: #fefce8; padding: 14px; border-radius: 8px;">
+                <div style="font-weight: 800; font-size: 16px; color: var(--accent-amber);">10 Menit</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Testing & Debugging</div>
+              </div>
+              <div style="background: #ecfdf5; padding: 14px; border-radius: 8px;">
+                <div style="font-weight: 800; font-size: 16px; color: var(--accent-green);">15 Menit</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Showcase & Peer Review</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 13: MISI GOLD -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">TIER GOLD • BASIC</span>
+          <h2 class="slide-title">Misi Proyek: Sistem Kelulusan Siswa</h2>
+          <p class="slide-subtitle">Menerapkan struktur percabangan 1 dan 2 kondisi (if & if-else)</p>
+        </div>
+        <div class="grid-2">
+          <div class="card" style="background: #fefce8; border-color: #fde047;">
+            <h4 style="color: #a16207; margin-bottom: 8px;">Ketentuan Studi Kasus:</h4>
+            <p style="font-size: 13px; color: #713f12; line-height: 1.6;">
+              KKTP Pemrograman Web ditetapkan angka <strong>75</strong>.
+            </p>
+            <ul style="margin: 10px 0 14px 20px; font-size: 13px; color: #854d0e; line-height: 1.6;">
+              <li><strong>JIKA nilai >= 75:</strong> Cetak teks warna hijau: <em>"Selamat! Anda dinyatakan TUNTAS / LULUS."</em></li>
+              <li><strong>JIKA nilai < 75:</strong> Cetak teks warna merah: <em>"Mohon Maaf, Anda BELUM TUNTAS. Silakan ikuti remedial."</em></li>
+            </ul>
+            <p style="font-size: 12px; color: #a16207;"><strong>Tantangan Uji:</strong> Coba ganti variabel nilai dengan angka 82 dan 60!</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 6px;">File: gold_kelulusan.php</h4>
+            <pre><code><span class="code-hl">&lt;?php</span>
+<span class="code-hl">$nama</span>  = <span class="code-str">"Rizky Ramadhan"</span>;
+<span class="code-hl">$nilai</span> = <span class="code-num">82</span>;
+
+<span class="code-hl">echo</span> <span class="code-str">"Status: "</span>;
+<span class="code-com">// Lengkapi struktur kondisi berikut:</span>
+<span class="code-hl">if</span> (<span class="code-hl">$nilai</span> >= <span class="code-num">75</span>) {
+    <span class="code-hl">echo</span> <span class="code-str">"&lt;b style='color:green;'&gt;TUNTAS&lt;/b&gt;"</span>;
+} <span class="code-hl">else</span> {
+    <span class="code-hl">echo</span> <span class="code-str">"&lt;b style='color:red;'&gt;REMEDIAL&lt;/b&gt;"</span>;
+}
+<span class="code-hl">?&gt;</span></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 14: MISI PLATINUM -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">TIER PLATINUM • INTERMEDIATE</span>
+          <h2 class="slide-title">Misi Proyek: Sistem Kasir Diskon Swalayan</h2>
+          <p class="slide-subtitle">Menerapkan percabangan bertingkat (if...elseif...else) dan kalkulasi diskon belanja</p>
+        </div>
+        <div class="grid-2">
+          <div class="card" style="background: #f8fafc;">
+            <h4 style="color: #334155; margin-bottom: 8px;">Ketentuan Diskon Bertingkat:</h4>
+            <ul style="margin: 8px 0 14px 20px; font-size: 13px; color: #475569; line-height: 1.7;">
+              <li>Belanja <strong>>= Rp 500.000</strong> -> Diskon 20%</li>
+              <li>Belanja <strong>>= Rp 250.000</strong> -> Diskon 10%</li>
+              <li>Belanja <strong>>= Rp 100.000</strong> -> Diskon 5%</li>
+              <li>Belanja <strong>< Rp 100.000</strong> -> Diskon 0%</li>
+            </ul>
+            <p style="font-size: 12.5px; color: #334155;">
+              <strong>Tugas Tim:</strong> Hitung nominal potongan dan total bayar akhir. Tampilkan struk kasir yang rapi!
+            </p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 6px;">File: platinum_kasir.php</h4>
+            <pre><code><span class="code-hl">$total</span> = <span class="code-num">350000</span>;
+
+<span class="code-hl">if</span> (<span class="code-hl">$total</span> >= <span class="code-num">500000</span>) {
+    <span class="code-hl">$diskon</span> = <span class="code-num">20</span>;
+} <span class="code-hl">elseif</span> (<span class="code-hl">$total</span> >= <span class="code-num">250000</span>) {
+    <span class="code-hl">$diskon</span> = <span class="code-num">10</span>;
+} <span class="code-hl">elseif</span> (<span class="code-hl">$total</span> >= <span class="code-num">100000</span>) {
+    <span class="code-hl">$diskon</span> = <span class="code-num">5</span>;
+} <span class="code-hl">else</span> {
+    <span class="code-hl">$diskon</span> = <span class="code-num">0</span>;
+}
+<span class="code-hl">$potongan</span> = (<span class="code-hl">$diskon</span> / <span class="code-num">100</span>) * <span class="code-hl">$total</span>;
+<span class="code-hl">$bayar</span> = <span class="code-hl">$total</span> - <span class="code-hl">$potongan</span>;</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 15: MISI DIAMOND -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">TIER DIAMOND • ADVANCE</span>
+          <h2 class="slide-title">Misi Proyek: Billing Parkir & Validasi Input</h2>
+          <p class="slide-subtitle">Menerapkan Nested If bersarang, validasi input error handling, dan Clean Code</p>
+        </div>
+        <div class="grid-2">
+          <div class="card" style="background: #ecfdf5; border-color: #6ee7b7;">
+            <h4 style="color: #047857; margin-bottom: 8px;">Ketentuan Tarif & Validasi:</h4>
+            <ul style="margin: 8px 0 12px 20px; font-size: 13px; color: #064e3b; line-height: 1.6;">
+              <li><strong>Validasi Input:</strong> Durasi harus >= 1 jam. Jika <= 0, cetak pesan Error!</li>
+              <li><strong>Motor:</strong> 2 jam pertama Rp 3.000, jam berikutnya Rp 1.500/jam.</li>
+              <li><strong>Mobil:</strong> 2 jam pertama Rp 6.000, jam berikutnya Rp 3.000/jam.</li>
+              <li><strong>Tiket Hilang:</strong> Denda tambahan Rp 25.000.</li>
+            </ul>
+            <p style="font-size: 12px; color: #047857;"><strong>Tantangan Ekstra:</strong> Terapkan ternary operator & uji durasi minus!</p>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 6px;">File: diamond_parkir.php</h4>
+            <pre><code><span class="code-hl">if</span> (<span class="code-hl">$durasi</span> <= <span class="code-num">0</span>) {
+    <span class="code-hl">echo</span> <span class="code-str">"ERROR: Durasi tidak valid!"</span>;
+} <span class="code-hl">else</span> {
+    <span class="code-hl">if</span> (<span class="code-hl">$jenis</span> == <span class="code-str">"Motor"</span>) {
+        <span class="code-hl">$biaya</span> = (<span class="code-hl">$durasi</span> <= <span class="code-num">2</span>) ? <span class="code-num">3000</span> : <span class="code-num">3000</span> + ((<span class="code-hl">$durasi</span>-<span class="code-num">2</span>)*<span class="code-num">1500</span>);
+    } <span class="code-hl">elseif</span> (<span class="code-hl">$jenis</span> == <span class="code-str">"Mobil"</span>) {
+        <span class="code-hl">$biaya</span> = (<span class="code-hl">$durasi</span> <= <span class="code-num">2</span>) ? <span class="code-num">6000</span> : <span class="code-num">6000</span> + ((<span class="code-hl">$durasi</span>-<span class="code-num">2</span>)*<span class="code-num">3000</span>);
+    }
+    <span class="code-hl">$denda</span> = <span class="code-hl">$tiketHilang</span> ? <span class="code-num">25000</span> : <span class="code-num">0</span>;
+    <span class="code-hl">$total</span> = <span class="code-hl">$biaya</span> + <span class="code-hl">$denda</span>;
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 16: PANDUAN & DEBUGGING -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">PANDUAN & DEBUGGING</span>
+          <h2 class="slide-title">Tips Menjalankan & Mengatasi Error PHP</h2>
+          <p class="slide-subtitle">Jangan takut error! Error adalah petunjuk dari komputer agar kode kita sempurna</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 10px;">Langkah Menjalankan Kode:</h4>
+            <ol style="margin-left: 20px; font-size: 13.5px; line-height: 1.7; color: #334155;">
+              <li>Pastikan modul Apache di XAMPP berstatus <strong>RUNNING (Hijau)</strong>.</li>
+              <li>Simpan file di dalam folder: <code>C:/xampp/htdocs/percabangan/</code>.</li>
+              <li>Buka browser dan buka: <code>http://localhost/percabangan/nama_file.php</code>.</li>
+              <li>Tekan tombol <strong>F5 (Refresh)</strong> setiap kali memperbarui kode di VS Code.</li>
+            </ol>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-red); margin-bottom: 10px;">3 Error Paling Sering Muncul:</h4>
+            <div style="font-size: 13px; line-height: 1.7; color: #334155;">
+              <p><strong>1. Parse Error: unexpected token ";"</strong><br>
+              -> Lupa menulis tanda titik koma (;) pada baris sebelumnya.</p>
+              <p style="margin-top: 8px;"><strong>2. Kurung Kurawal { } Tidak Berpasangan</strong><br>
+              -> Pastikan setiap kurung buka { memiliki kurung tutup }.</p>
+              <p style="margin-top: 8px;"><strong>3. Tertukar Simbol = dengan ==</strong><br>
+              -> Dalam <code>if(...)</code> wajib gunakan <code>==</code>!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 17: SHOWCASE -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">SHOWCASE & EVALUASI • 15 MENIT</span>
+          <h2 class="slide-title">Showcase Proyek & Uji Kasus di Depan Kelas</h2>
+          <p class="slide-subtitle">Mendemonstrasikan jalannya program dan menguji keandalan logika di layar proyektor</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h4 style="color: var(--primary); margin-bottom: 10px;">Prosedur Uji Coba:</h4>
+            <ol style="margin-left: 20px; font-size: 13.5px; line-height: 1.7; color: #334155;">
+              <li>Perwakilan kelompok (1 Gold, 1 Platinum, 1 Diamond) maju ke meja utama.</li>
+              <li>Buka tab browser dan tampilkan skrip kode PHP di layar proyektor.</li>
+              <li><strong>Pengujian Skenario:</strong>
+                <ul style="margin-left: 16px; margin-top: 4px;">
+                  <li>Uji kondisi TRUE -> Cek apakah luaran sesuai ekspektasi.</li>
+                  <li>Uji kondisi FALSE -> Cek apakah blok else dieksekusi benar.</li>
+                  <li>Uji kondisi batas (Edge Case).</li>
+                </ul>
+              </li>
+            </ol>
+          </div>
+          <div class="card">
+            <h4 style="color: var(--accent-green); margin-bottom: 10px;">Panduan Umpan Balik (Peer Review):</h4>
+            <div style="font-size: 13px; line-height: 1.7; color: #475569;">
+              <p>Bagi kelompok yang menyimak di tempat duduk:</p>
+              <ul style="margin: 8px 0 12px 20px;">
+                <li>Berikan apresiasi tepuk tangan atas usaha tim yang maju!</li>
+                <li>Amati kerapian kode (indentasi dan penamaan variabel).</li>
+                <li>Ajukan pertanyaan kritis: <em>"Bagaimana jika total belanjanya pas di angka batas promo?"</em></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 18: REFLEKSI 3M -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">REFLEKSI MENDALAM • 15 MENIT AKHIR</span>
+          <h2 class="slide-title">Refleksi Pembelajaran Mendalam (3M)</h2>
+          <p class="slide-subtitle">Menilai pemahaman diri, kebermaknaan ilmu, dan kegembiraan belajar bersama</p>
+        </div>
+        <div class="grid-3">
+          <div class="card" style="background: #eff6ff; border-color: #bfdbfe;">
+            <h3 style="color: var(--primary-dark); font-size: 18px; margin-bottom: 6px;">1. MINDFUL</h3>
+            <span style="font-size: 12px; color: var(--primary); font-weight: 700;">(Berkesadaran Penuh)</span>
+            <p style="font-size: 13px; color: #1e3a8a; margin-top: 14px; line-height: 1.6;">
+              <em>"Sejauh mana saya memahami alur percabangan PHP hari ini? Apakah saya sudah bisa mengatasi pesan error koding tanpa panik?"</em>
+            </p>
+          </div>
+          <div class="card" style="background: #ecfdf5; border-color: #a7f3d0;">
+            <h3 style="color: #047857; font-size: 18px; margin-bottom: 6px;">2. MEANINGFUL</h3>
+            <span style="font-size: 12px; color: var(--accent-green); font-weight: 700;">(Bermakna Nyata)</span>
+            <p style="font-size: 13px; color: #064e3b; margin-top: 14px; line-height: 1.6;">
+              <em>"Mengapa logika percabangan ini sangat krusial bagi pembuatan aplikasi nyata di industri perangkat lunak?"</em>
+            </p>
+          </div>
+          <div class="card" style="background: #fefce8; border-color: #fde68a;">
+            <h3 style="color: #b45309; font-size: 18px; margin-bottom: 6px;">3. JOYFUL</h3>
+            <span style="font-size: 12px; color: var(--accent-amber); font-weight: 700;">(Menggembirakan)</span>
+            <p style="font-size: 13px; color: #78350f; margin-top: 14px; line-height: 1.6;">
+              <em>"Bagaimana rasanya dan apa momen paling seru saat program kelompok kami berhasil berjalan tanpa error?"</em>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 19: RANGKUMAN -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag-badge">KESIMPULAN</span>
+          <h2 class="slide-title">Rangkuman Materi Hari Ini</h2>
+          <p class="slide-subtitle">Intisari penting yang harus selalu diingat oleh seorang calon Software Developer</p>
+        </div>
+        <div class="card" style="flex: 1;">
+          <ol style="margin-left: 20px; font-size: 14.5px; line-height: 1.8; color: #334155;">
+            <li><strong>Struktur Percabangan</strong> memungkinkan komputer mengambil keputusan otomatis berdasarkan pengujian kondisi Boolean (<code>true</code> atau <code>false</code>).</li>
+            <li>Gunakan <code>if</code> tunggal untuk 1 aksi opsional, dan <code>if...else</code> untuk 2 cabang aksi alternatif.</li>
+            <li>Gunakan <code>if...elseif...else</code> untuk multi-kondisi berjenjang dari nilai terbesar ke terkecil.</li>
+            <li>Gunakan <strong>Nested If</strong> jika keputusan lanjutan bergantung pada hasil verifikasi kondisi utama sebelumnya.</li>
+            <li><strong>Ketelitian Programmer:</strong> Wajib membedakan operator assignment (<code>=</code>) dengan equality (<code>==</code>), serta selalu teliti terhadap kurung kurawal <code>{ }</code> dan titik koma <code>;</code>.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- SLIDE 20: PENUTUP -->
+      <div class="slide dark-slide">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 900px;">
+          <span class="tag-badge">AGENDA PERTEMUAN BERIKUTNYA</span>
+          <h2 style="font-size: 32px; font-weight: 800; color: #ffffff; margin: 10px 0;">
+            STRUKTUR KONTROL PERULANGAN (LOOPING)
+          </h2>
+          <p style="font-size: 17px; color: #38bdf8; margin-bottom: 24px;">
+            Mengeksekusi ribuan baris data dalam sekejap dengan: <code>for</code>, <code>while</code>, dan <code>do-while</code> di PHP
+          </p>
+          <div class="card" style="background: rgba(30, 41, 59, 0.85); border-color: #334155;">
+            <h4 style="color: #60a5fa; margin-bottom: 8px;">SOP K3LH Sebelum Meninggalkan Lab:</h4>
+            <div style="font-size: 13.5px; color: #cbd5e1; line-height: 1.7;">
+              1. Simpan semua file koding di folder masing-masing.<br>
+              2. Stop modul Apache di XAMPP dan tutup Visual Studio Code.<br>
+              3. Lakukan <strong>SHUTDOWN</strong> komputer secara normal melalui Start Menu.<br>
+              4. Rapikan kembali keyboard, mouse, dan kursi lab.
+            </div>
+          </div>
+          <p style="font-size: 15px; color: #94a3b8; margin-top: 20px;">
+            Doa Penutup &bull; Terima kasih atas kerja keras koding hari ini!
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar -->
+  <div class="controls">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <span style="font-weight: 700; color: #f8fafc;">PHP Branching - Fase E RPL</span>
+      <span class="counter" id="slideCounter">Slide 1 / 20</span>
+    </div>
+    <div class="btn-group">
+      <button class="btn" id="prevBtn" onclick="prevSlide()">&#8592; Sebelumnya</button>
+      <button class="btn" id="nextBtn" onclick="nextSlide()">Berikutnya &#8594;</button>
+      <button class="btn" style="background: var(--primary);" onclick="toggleFullScreen()">&#x26F6; Layar Penuh</button>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    const counter = document.getElementById('slideCounter');
+
+    function showSlide(index) {
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === index);
+      });
+      counter.textContent = `Slide ${index + 1} / ${totalSlides}`;
+      document.getElementById('prevBtn').disabled = (index === 0);
+      document.getElementById('nextBtn').disabled = (index === totalSlides - 1);
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        showSlide(currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        showSlide(currentSlide);
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      }
+    });
+
+    // Initialize
+    showSlide(0);
+  </script>
+</body>
+</html>

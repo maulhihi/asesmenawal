@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Asesmen Awal & Rekap Diferensiasi (RPL - PHP)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --gold: #d97706;
+      --gold-bg: #fefce8;
+      --gold-border: #fde047;
+      --platinum: #475569;
+      --platinum-bg: #f1f5f9;
+      --platinum-border: #cbd5e1;
+      --diamond: #059669;
+      --diamond-bg: #ecfdf5;
+      --diamond-border: #6ee7b7;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Nav */
+    header {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    /* Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: #1e293b;
+      padding: 4px;
+      border-radius: 10px;
+    }
+
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 24px auto;
+      padding: 0 20px;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* Form & Inputs */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .grid-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    /* Question Card */
+    .question-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 18px;
+      transition: all 0.2s;
+    }
+
+    .question-item:hover {
+      border-color: #cbd5e1;
+      background: #ffffff;
+    }
+
+    .question-header {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1e293b;
+    }
+
+    .question-num {
+      background: #e2e8f0;
+      color: #334155;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .code-snippet {
+      font-family: 'Fira Code', monospace;
+      background: #1e293b;
+      color: #38bdf8;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 10px 0 14px 0;
+      overflow-x: auto;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13.5px;
+      transition: all 0.15s;
+    }
+
+    .option-label:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .option-label input {
+      margin-right: 10px;
+      accent-color: var(--primary);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #334155;
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+    }
+
+    .btn-success {
+      background: var(--diamond);
+      color: #ffffff;
+    }
+
+    .btn-success:hover {
+      background: #047857;
+    }
+
+    .btn-warning {
+      background: var(--gold);
+      color: #ffffff;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-gold {
+      background: var(--gold-bg);
+      color: #a16207;
+      border: 1px solid var(--gold-border);
+    }
+
+    .badge-platinum {
+      background: var(--platinum-bg);
+      color: #334155;
+      border: 1px solid var(--platinum-border);
+    }
+
+    .badge-diamond {
+      background: var(--diamond-bg);
+      color: #047857;
+      border: 1px solid var(--diamond-border);
+    }
+
+    /* Result Modal / Box */
+    .result-box {
+      display: none;
+      background: #ffffff;
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-top: 24px;
+      animation: fadeIn 0.3s ease;
+      box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.15);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .score-circle {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    /* Recap Review Accordion / Cards */
+    .recap-review-container {
+      margin-top: 20px;
+      border-top: 1px dashed var(--border);
+      padding-top: 16px;
+    }
+
+    .recap-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+    }
+
+    .recap-item.is-correct {
+      border-left: 5px solid var(--diamond);
+      background: #f0fdf4;
+    }
+
+    .recap-item.is-wrong {
+      border-left: 5px solid #ef4444;
+      background: #fef2f2;
+    }
+
+    .recap-q-title {
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .recap-explanation {
+      margin-top: 8px;
+      font-size: 12.5px;
+      background: #ffffff;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      color: #334155;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 4px 0;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Table */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #334155;
+      text-align: left;
+      padding: 12px 14px;
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: #1e293b;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Group Cards Grid */
+    .groups-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .group-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s;
+    }
+
+    .group-card.highlighted {
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+      transform: translateY(-4px);
+    }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+
+    .group-name {
+      font-weight: 800;
+      font-size: 16px;
+      color: #0f172a;
+    }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      background: #f8fafc;
+      font-size: 13px;
+    }
+
+    .member-item.is-leader {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      font-weight: 600;
+    }
+
+    .member-item.is-user {
+      background: #fefce8;
+      border: 1px solid #fde047;
+      font-weight: 700;
+    }
+
+    /* Search bar */
+    .search-box {
+      display: flex;
+      gap: 8px;
+      max-width: 320px;
+      margin-bottom: 14px;
+    }
+
+    /* Alerts */
+    .callout {
+      border-left: 4px solid var(--primary);
+      background: #eff6ff;
+      padding: 14px 18px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13.5px;
+      color: #1e40af;
+      margin-bottom: 16px;
+    }
+
+    .callout-green {
+      border-left-color: var(--diamond);
+      background: #ecfdf5;
+      color: #065f46;
+    }
+
+    /* Footer */
+    footer {
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: 13px;
+      padding: 20px;
+      text-align: center;
+      margin-top: auto;
+      border-top: 1px solid #1e293b;
+    }
+
+    /* Print Styles */
+    @media print {
+      header, .nav-tabs, .btn, .no-print, .search-box {
+        display: none !important;
+      }
+      body {
+        background: #ffffff;
+        color: #000000;
+      }
+      main {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .card {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+      .tab-content {
+        display: block !important;
+      }
+      .result-box {
+        display: block !important;
+        border: 1px solid #ccc;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">&lt;/&gt;</div>
+        <div>
+          <div class="brand-title">ASESMEN AWAL &amp; REKAP KELOMPOK BELAJAR</div>
+          <div class="brand-subtitle">Pemrograman Terstruktur (PHP) • Fase E RPL</div>
+        </div>
+      </div>
+      <div class="nav-tabs">
+        <button class="nav-btn active" onclick="switchTab('quiz')">📝 Kuis Siswa</button>
+        <button class="nav-btn" onclick="switchTab('dashboard')">📊 Rekapitulasi Kelas</button>
+        <button class="nav-btn" onclick="switchTab('groups')">👥 Pembagian Kelompok</button>
+        <a href="presentasi.html" target="_blank" class="nav-btn" style="text-decoration: none; background: #334155; color: #38bdf8;">📽️ Buka Slide PPT</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ==================== TAB 1: KUIS SISWA ==================== -->
+    <div id="tab-quiz" class="tab-content active">
+      <div class="card">
+        <div class="card-title">
+          <span>Lembar Asesmen Awal Diagnostik Siswa</span>
+          <span class="badge badge-gold" id="timerBadge">⏱️ Waktu Sisa: 05:00</span>
+        </div>
+        <p class="card-desc">
+          Jawablah 5 butir pertanyaan di bawah ini secara mandiri. Begitu selesai, Anda akan <strong>langsung melihat rekap nilai, ulasan butir soal, tier kelompok, dan misi proyek</strong> Anda.
+        </p>
+
+        <!-- Form Identitas -->
+        <div class="grid-form" style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 24px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Nama Lengkap Siswa *</label>
+            <input type="text" id="studentName" class="form-control" placeholder="Contoh: Ahmad Fauzi" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Nomor Induk Siswa (NIS) *</label>
+            <input type="text" id="studentNIS" class="form-control" placeholder="Contoh: 102401" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Kelas / Rombel</label>
+            <input type="text" id="studentClass" class="form-control" value="X RPL 1" readonly>
+          </div>
+        </div>
+
+        <form id="quizForm" onsubmit="submitQuiz(event)">
+
+          <!-- Soal 1 -->
+          <div class="question-item">
+            <div class="question-header">
+              <span class="question-num">Soal 1</span>
+              <span>Konsep Tipe Data Penentu Percabangan</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              Di dalam bahasa pemrograman PHP, tipe data yang hanya memiliki dua kemungkinan nilai, yaitu <code>true</code> atau <code>false</code>, dan menjadi dasar evaluasi kondisi percabangan adalah...
+            </p>
+            <div class="options-grid">
+              <label class="option-label"><input type="radio" name="q1" value="A" required> A. Integer</label>
+              <label class="option-label"><input type="radio" name="q1" value="B"> B. String</label>
+              <label class="option-label"><input type="radio" name="q1" value="C"> C. Boolean</label>
+              <label class="option-label"><input type="radio" name="q1" value="D"> D. Float / Double</label>
+            </div>
+          </div>
+
+          <!-- Soal 2 -->
+          <div class="question-item">
+            <div class="question-header">
+              <span class="question-num">Soal 2</span>
+              <span>Operator Pembanding Kesetaraan Nilai</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              Manakah di antara operator berikut yang digunakan dalam sintaks PHP untuk membandingkan apakah dua variabel memiliki <strong>nilai yang sama</strong>?
+            </p>
+            <div class="options-grid">
+              <label class="option-label"><input type="radio" name="q2" value="A" required> A. = (Satu tanda sama dengan)</label>
+              <label class="option-label"><input type="radio" name="q2" value="B"> B. == (Dua tanda sama dengan)</label>
+              <label class="option-label"><input type="radio" name="q2" value="C"> C. != (Tanda seru sama dengan)</label>
+              <label class="option-label"><input type="radio" name="q2" value="D"> D. => (Tanda panah)</label>
+            </div>
+          </div>
+
+          <!-- Soal 3 -->
+          <div class="question-item">
+            <div class="question-header">
+              <span class="question-num">Soal 3</span>
+              <span>Analisis Alur Kode Percabangan Tunggal</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 4px;">Perhatikan potongan skrip PHP berikut:</p>
+            <div class="code-snippet">&lt;?php
+$nilai = 75;
+if ($nilai &gt;= 70) {
+    echo "Lulus";
+}
+?&gt;</div>
+            <p style="font-size: 14px; margin-bottom: 8px;">Apa luaran (output) yang akan tampil di layar browser?</p>
+            <div class="options-grid">
+              <label class="option-label"><input type="radio" name="q3" value="A" required> A. Lulus</label>
+              <label class="option-label"><input type="radio" name="q3" value="B"> B. Tidak Lulus</label>
+              <label class="option-label"><input type="radio" name="q3" value="C"> C. Kosong (Blank)</label>
+              <label class="option-label"><input type="radio" name="q3" value="D"> D. Terjadi Error Sintaks</label>
+            </div>
+          </div>
+
+          <!-- Soal 4 -->
+          <div class="question-item">
+            <div class="question-header">
+              <span class="question-num">Soal 4</span>
+              <span>Analisis Alur Percabangan Ganda (if...else)</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 4px;">Perhatikan skrip PHP berikut:</p>
+            <div class="code-snippet">&lt;?php
+$umur = 15;
+if ($umur &gt;= 17) {
+    echo "Boleh Memiliki KTP";
+} else {
+    echo "Belum Cukup Umur";
+}
+?&gt;</div>
+            <p style="font-size: 14px; margin-bottom: 8px;">Keluaran dari program di atas adalah...</p>
+            <div class="options-grid">
+              <label class="option-label"><input type="radio" name="q4" value="A" required> A. Boleh Memiliki KTP</label>
+              <label class="option-label"><input type="radio" name="q4" value="B"> B. Belum Cukup Umur</label>
+              <label class="option-label"><input type="radio" name="q4" value="C"> C. 15</label>
+              <label class="option-label"><input type="radio" name="q4" value="D"> D. Error sintaks pada baris else</label>
+            </div>
+          </div>
+
+          <!-- Soal 5 -->
+          <div class="question-item">
+            <div class="question-header">
+              <span class="question-num">Soal 5</span>
+              <span>Operator Logika Majemuk (Multi-Kondisi)</span>
+            </div>
+            <p style="font-size: 14px; margin-bottom: 8px;">
+              Jika sebuah sistem ingin memverifikasi bahwa <code>$nilai >= 75</code> <strong>DAN</strong> <code>$kehadiran >= 80%</code>, operator logika PHP yang wajib digunakan adalah...
+            </p>
+            <div class="options-grid">
+              <label class="option-label"><input type="radio" name="q5" value="A" required> A. || (OR Logika)</label>
+              <label class="option-label"><input type="radio" name="q5" value="B"> B. && (AND Logika)</label>
+              <label class="option-label"><input type="radio" name="q5" value="C"> C. ! (NOT / Negasi)</label>
+              <label class="option-label"><input type="radio" name="q5" value="D"> D. == (Kesetaraan)</label>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center; font-size: 16px; padding: 12px;">
+              🚀 Kirim Jawaban &amp; Lihat Rekap Hasil Saya
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">Batal / Reset</button>
+          </div>
+        </form>
+
+        <!-- ==================== KOTAK REKAP SISWA LANGSUNG ==================== -->
+        <div id="resultBox" class="result-box">
+          <div class="result-header">
+            <div>
+              <span class="badge badge-platinum" style="margin-bottom: 6px;">KARTU REKAPITULASI HASIL ASESMEN</span>
+              <h3 style="font-size: 22px; font-weight: 800; color: #0f172a;" id="resStudentName">Nama Siswa</h3>
+              <p style="font-size: 13px; color: var(--text-muted);" id="resStudentMeta">NIS: 102401 • Kelas: X RPL 1</p>
+            </div>
+            <div style="text-align: right;">
+              <span class="stat-label">Skor Capaian:</span>
+              <div class="score-circle" id="resScore">100</div>
+              <span style="font-size: 12px; color: var(--text-muted);" id="resCorrectDetail">5 dari 5 Soal Benar</span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+            <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+              <span class="stat-label">Tier Diferensiasi Anda:</span>
+              <div style="margin-top: 8px;" id="resTierBadge">
+                <span class="badge badge-diamond" style="font-size: 14px; padding: 6px 14px;">DIAMOND (ADVANCE)</span>
+              </div>
+            </div>
+            <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+              <span class="stat-label">Tugas Misi Mini Proyek PjBL:</span>
+              <p style="font-weight: 700; font-size: 13.5px; margin-top: 6px; color: #1e293b;" id="resProjectMission">
+                Sistem Billing Parkir Bertingkat &amp; Validasi Input (Nested If)
+              </p>
+            </div>
+          </div>
+
+          <div class="callout callout-green" id="resGuidance">
+            <strong>Rekomendasi Belajar:</strong> Pertahankan pemahaman logika koding kalian!
+          </div>
+
+          <!-- Ulasan Detail Per Soal (User Question-by-Question Review) -->
+          <div class="recap-review-container">
+            <h4 style="font-size: 16px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <span>📋 Ulasan &amp; Pembahasan Jawaban Anda (5 Soal):</span>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Transparansi Penilaian</span>
+            </h4>
+            <div id="recapQuestionsList">
+              <!-- Item pembahasan dirender otomatis via JS -->
+            </div>
+          </div>
+
+          <!-- Action buttons for user -->
+          <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="goToMyGroup()">
+              🔍 Lihat Kelompok &amp; Peran Koding Saya &rarr;
+            </button>
+            <button class="btn btn-secondary" onclick="switchTab('dashboard')">
+              📊 Lihat Peringkat Kelas
+            </button>
+            <button class="btn btn-secondary" onclick="window.print()">
+              🖨️ Cetak Kartu Hasil Saya
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== TAB 2: REKAPITULASI KELAS (DASHBOARD) ==================== -->
+    <div id="tab-dashboard" class="tab-content">
+      <!-- Statistik Ringkas -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Siswa Mengerjakan</div>
+          <div class="stat-val" style="color: var(--primary);" id="statTotal">0</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Siswa telah terdata</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rata-Rata Skor Kelas</div>
+          <div class="stat-val" style="color: #0f172a;" id="statAvg">0.0</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Dari skala 100 poin</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tier GOLD (Basic)</div>
+          <div class="stat-val" style="color: var(--gold);" id="statGold">0</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Skor 0 - 40 (LK Terbimbing)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tier PLATINUM (Interm.)</div>
+          <div class="stat-val" style="color: var(--platinum);" id="statPlat">0</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Skor 50 - 70 (LK Bertingkat)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tier DIAMOND (Advance)</div>
+          <div class="stat-val" style="color: var(--diamond);" id="statDiam">0</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Skor 80 - 100 (Tutor Sebaya)</div>
+        </div>
+      </div>
+
+      <!-- Action Toolbar & Search -->
+      <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h3 style="font-size: 18px; font-weight: 700;">Tabel Rekapitulasi Hasil Asesmen Kelas</h3>
+            <p style="font-size: 13px; color: var(--text-muted);">Semua siswa dapat melihat posisinya secara transparan pada tabel ini</p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="loadSimulatedData()">⚡ Isi 15 Siswa Simulasi RPL</button>
+            <button class="btn btn-secondary" onclick="exportCSV()">📥 Unduh CSV / Excel</button>
+            <button class="btn btn-secondary" onclick="window.print()">🖨️ Cetak Rekapitulasi</button>
+            <button class="btn btn-danger" onclick="clearAllData()">🗑️ Reset Data</button>
+          </div>
+        </div>
+
+        <!-- Filter / Search box -->
+        <div class="search-box">
+          <input type="text" id="searchInput" class="form-control" placeholder="🔍 Cari Nama atau NIS Anda..." onkeyup="filterTable()">
+        </div>
+
+        <div class="table-responsive">
+          <table id="studentsTable">
+            <thead>
+              <tr>
+                <th style="width: 50px;">No</th>
+                <th>NIS</th>
+                <th>Nama Peserta Didik</th>
+                <th>Kelas</th>
+                <th>Jawaban Benar</th>
+                <th>Skor</th>
+                <th>Tier Diferensiasi</th>
+                <th>Waktu Selesai</th>
+                <th class="no-print" style="width: 80px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+              <tr>
+                <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                  Belum ada data siswa. Silakan kerjakan kuis pada tab "Kuis Siswa" atau klik tombol "Isi 15 Siswa Simulasi RPL" di atas.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 3: PEMBAGIAN KELOMPOK ==================== -->
+    <div id="tab-groups" class="tab-content">
+      <div class="card">
+        <div class="card-title">
+          <span>Otomasi Pembagian Kelompok Belajar Proyek</span>
+          <button class="btn btn-primary" onclick="generateGroups()">⚡ Bentuk / Acak Kelompok</button>
+        </div>
+        <p class="card-desc">
+          Siswa dapat melihat di kelompok mana mereka ditempatkan beserta peran masing-masing:
+        </p>
+
+        <div class="grid-form" style="background: #f8fafc; padding: 18px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 20px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Model Pengelompokan Pembelajaran:</label>
+            <select id="groupStrategy" class="form-control" onchange="generateGroups()">
+              <option value="heterogeneous">Strategi 1: Kelompok Heterogen (Tutor Sebaya - 1 Leader Diamond/Platinum + 2-3 Gold)</option>
+              <option value="homogeneous">Strategi 2: Kelompok Homogen (Sesuai Tier - Mengerjakan LKM Khusus Gold/Plat/Diam)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Target Jumlah Anggota per Kelompok:</label>
+            <select id="groupSize" class="form-control" onchange="generateGroups()">
+              <option value="3">3 Orang per Kelompok (Rekomendasi RPP)</option>
+              <option value="4">4 Orang per Kelompok</option>
+              <option value="5">5 Orang per Kelompok</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" onclick="exportGroupsCSV()">📥 Export Daftar Kelompok (.CSV)</button>
+            <button class="btn btn-secondary" onclick="window.print()">🖨️ Cetak Lembar Kelompok</button>
+          </div>
+          <div class="search-box" style="margin-bottom: 0;">
+            <input type="text" id="searchGroupInput" class="form-control" placeholder="🔍 Cari Nama Saya di Kelompok..." onkeyup="filterGroups()">
+          </div>
+        </div>
+
+        <!-- Wadah Kartu Kelompok -->
+        <div id="groupsContainer" class="groups-grid">
+          <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; background: #f8fafc; border: 1px dashed var(--border); border-radius: var(--radius);">
+            Silakan pastikan ada data siswa di tab "Rekapitulasi", lalu klik tombol <strong>"Bentuk / Acak Kelompok"</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <div style="max-width: 1200px; margin: 0 auto;">
+      Aplikasi Asesmen Awal &amp; Pengelompokan Pembelajaran Mendalam • Konsentrasi Keahlian Rekayasa Perangkat Lunak (RPL) SMK • Guru Pamong / Tim PPG RPL
+    </div>
+  </footer>
+
+  <script>
+    // Data Storage Key
+    const STORAGE_KEY = 'ppg_rpl_diagnostic_students';
+
+    // Bank Soal & Pembahasan Lengkap
+    const QUESTIONS_DATA = [
+      {
+        id: 1,
+        title: "Konsep Tipe Data Penentu Percabangan",
+        question: "Di dalam bahasa pemrograman PHP, tipe data yang hanya memiliki dua kemungkinan nilai, yaitu true atau false, dan menjadi dasar evaluasi kondisi percabangan adalah...",
+        options: { A: "Integer", B: "String", C: "Boolean", D: "Float / Double" },
+        correct: "C",
+        explanation: "Tipe data Boolean hanya memiliki dua kemungkinan nilai logika: true (benar) atau false (salah). Tipe data inilah yang dihasilkan dari evaluasi kondisi dalam percabangan if."
+      },
+      {
+        id: 2,
+        title: "Operator Pembanding Kesetaraan Nilai",
+        question: "Manakah di antara operator berikut yang digunakan dalam sintaks PHP untuk membandingkan apakah dua variabel memiliki nilai yang sama?",
+        options: { A: "= (Satu tanda sama dengan)", B: "== (Dua tanda sama dengan)", C: "!= (Tanda seru sama dengan)", D: "=> (Tanda panah)" },
+        correct: "B",
+        explanation: "Simbol '=' satu adalah operator penugasan nilai (assignment), sedangkan '==' dua adalah operator perbandingan kesetaraan nilai (equality)."
+      },
+      {
+        id: 3,
+        title: "Analisis Alur Kode Percabangan Tunggal",
+        question: "Perhatikan potongan skrip PHP:\n$nilai = 75;\nif ($nilai >= 70) {\n    echo 'Lulus';\n}\nApa luaran (output) yang akan tampil di layar browser?",
+        options: { A: "Lulus", B: "Tidak Lulus", C: "Kosong (Blank)", D: "Terjadi Error Sintaks" },
+        correct: "A",
+        explanation: "Variabel $nilai bernilai 75. Kondisi (75 >= 70) menghasilkan nilai true, sehingga instruksi echo 'Lulus' berhasil dieksekusi."
+      },
+      {
+        id: 4,
+        title: "Analisis Alur Percabangan Ganda (if...else)",
+        question: "Perhatikan skrip PHP:\n$umur = 15;\nif ($umur >= 17) {\n    echo 'Boleh Memiliki KTP';\n} else {\n    echo 'Belum Cukup Umur';\n}\nKeluaran dari program di atas adalah...",
+        options: { A: "Boleh Memiliki KTP", B: "Belum Cukup Umur", C: "15", D: "Error sintaks pada baris else" },
+        correct: "B",
+        explanation: "Kondisi (15 >= 17) bernilai false. Karena false, PHP langsung melompat mengeksekusi blok else dan mencetak 'Belum Cukup Umur'."
+      },
+      {
+        id: 5,
+        title: "Operator Logika Majemuk (Multi-Kondisi)",
+        question: "Jika sebuah sistem ingin memverifikasi bahwa $nilai >= 75 DAN $kehadiran >= 80%, operator logika PHP yang wajib digunakan adalah...",
+        options: { A: "|| (OR Logika)", B: "&& (AND Logika)", C: "! (NOT / Negasi)", D: "== (Kesetaraan)" },
+        correct: "B",
+        explanation: "Operator logika '&&' (AND) mensyaratkan kedua operand bernilai benar (true) agar keseluruhan ekspresi bernilai benar."
+      }
+    ];
+
+    let lastSubmittedNIS = null;
+
+    // Load Initial Data
+    function getStoredStudents() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveStudents(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+      updateDashboard();
+    }
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+      const targetTab = document.getElementById(`tab-${tabId}`);
+      if (targetTab) targetTab.classList.add('active');
+
+      const btnIndex = tabId === 'quiz' ? 0 : (tabId === 'dashboard' ? 1 : 2);
+      document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
+
+      if (tabId === 'dashboard') updateDashboard();
+      if (tabId === 'groups') generateGroups();
+    }
+
+    // Submit Quiz Handler
+    function submitQuiz(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('studentName').value.trim();
+      const nis = document.getElementById('studentNIS').value.trim();
+      const sClass = document.getElementById('studentClass').value;
+
+      if (!name || !nis) {
+        alert('Mohon lengkapi Nama dan NIS terlebih dahulu!');
+        return;
+      }
+
+      const form = document.getElementById('quizForm');
+      const formData = new FormData(form);
+
+      let correctCount = 0;
+      let userAnswers = {};
+
+      QUESTIONS_DATA.forEach(q => {
+        const userChoice = formData.get(`q${q.id}`);
+        userAnswers[`q${q.id}`] = userChoice;
+        if (userChoice === q.correct) {
+          correctCount++;
+        }
+      });
+
+      const score = correctCount * 20;
+      let tier = 'Gold';
+      let tierClass = 'badge-gold';
+      let mission = 'Sistem Validasi Kelulusan Siswa (if dan if-else satu/dua kondisi)';
+      let guidance = 'Kalian masuk ke Kelompok Gold (Basic). Guru akan mendampingi secara intensif dengan template starter code lengkap agar logika dasar kalian makin mantap!';
+
+      if (score >= 80) {
+        tier = 'Diamond';
+        tierClass = 'badge-diamond';
+        mission = 'Sistem Billing Parkir Bertingkat & Validasi Input (Nested If & Clean Code)';
+        guidance = 'Luar biasa! Pemahaman logika kalian sangat matang. Kalian ditugaskan memimpin proyek dan menjadi tutor sebaya bagi rekan sekelompok.';
+      } else if (score >= 50) {
+        tier = 'Platinum';
+        tierClass = 'badge-platinum';
+        mission = 'Sistem Kasir Diskon Swalayan (if...elseif...else multi-kondisi)';
+        guidance = 'Bagus! Logika dasar kalian cukup kuat. Fokuslah pada perancangan urutan kondisi diskon bertingkat dari nominal terbesar ke terkecil.';
+      }
+
+      const studentRecord = {
+        id: Date.now(),
+        nis: nis,
+        name: name,
+        class: sClass,
+        correctCount: correctCount,
+        score: score,
+        tier: tier,
+        userAnswers: userAnswers,
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      lastSubmittedNIS = nis;
+
+      // Simpan ke LocalStorage
+      const list = getStoredStudents();
+      const existingIdx = list.findIndex(s => s.nis === nis);
+      if (existingIdx >= 0) {
+        list[existingIdx] = studentRecord;
+      } else {
+        list.push(studentRecord);
+      }
+      saveStudents(list);
+
+      // Render Hasil Instan ke Siswa
+      document.getElementById('resStudentName').textContent = name;
+      document.getElementById('resStudentMeta').textContent = `NIS: ${nis} • Kelas: ${sClass}`;
+      document.getElementById('resScore').textContent = score;
+      document.getElementById('resCorrectDetail').textContent = `${correctCount} dari 5 Soal Benar (${score} Poin)`;
+      document.getElementById('resTierBadge').innerHTML = `<span class="badge ${tierClass}" style="font-size: 14px; padding: 6px 14px;">TIER ${tier.toUpperCase()}</span>`;
+      document.getElementById('resProjectMission').textContent = mission;
+      document.getElementById('resGuidance').innerHTML = `<strong>Rekomendasi Pembelajaran:</strong> ${guidance}`;
+
+      // Render Ulasan Per Butir Soal untuk Siswa (Question-by-Question Detailed Recap)
+      const recapListEl = document.getElementById('recapQuestionsList');
+      recapListEl.innerHTML = QUESTIONS_DATA.map(q => {
+        const uAns = userAnswers[`q${q.id}`];
+        const isRight = (uAns === q.correct);
+        const icon = isRight ? '✅' : '❌';
+        const statusText = isRight ? 'Jawaban Anda Tepat (+20 Poin)' : 'Jawaban Anda Kurang Tepat (0 Poin)';
+
+        return `<div class="recap-item ${isRight ? 'is-correct' : 'is-wrong'}">
+          <div class="recap-q-title">
+            <span>${icon} Soal ${q.id}: ${q.title}</span>
+            <span style="font-size: 12px; font-weight:700; color: ${isRight ? 'var(--diamond)' : '#dc2626'}">${statusText}</span>
+          </div>
+          <div style="font-size: 13px; color: #334155; margin-bottom: 6px;">
+            Jawaban Anda: <strong>${uAns}. ${q.options[uAns] || '-'}</strong> | 
+            Kunci Benar: <strong style="color:var(--diamond);">${q.correct}. ${q.options[q.correct]}</strong>
+          </div>
+          <div class="recap-explanation">
+            <strong>💡 Pembahasan:</strong> ${q.explanation}
+          </div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('resultBox').style.display = 'block';
+      document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Jump directly to the student's assigned group
+    function goToMyGroup() {
+      if (!lastSubmittedNIS) {
+        switchTab('groups');
+        return;
+      }
+      switchTab('groups');
+      setTimeout(() => {
+        const input = document.getElementById('searchGroupInput');
+        if (input) {
+          input.value = lastSubmittedNIS;
+          filterGroups();
+        }
+      }, 200);
+    }
+
+    function resetForm() {
+      document.getElementById('quizForm').reset();
+      document.getElementById('resultBox').style.display = 'none';
+      document.getElementById('studentName').value = '';
+      document.getElementById('studentNIS').value = '';
+      lastSubmittedNIS = null;
+    }
+
+    // Update Dashboard Data
+    function updateDashboard() {
+      const list = getStoredStudents();
+      const tbody = document.getElementById('studentsTableBody');
+
+      document.getElementById('statTotal').textContent = list.length;
+
+      if (list.length === 0) {
+        document.getElementById('statAvg').textContent = '0.0';
+        document.getElementById('statGold').textContent = '0';
+        document.getElementById('statPlat').textContent = '0';
+        document.getElementById('statDiam').textContent = '0';
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada data siswa. Silakan klik tombol "Isi 15 Siswa Simulasi RPL" di atas.</td></tr>`;
+        return;
+      }
+
+      let totalScore = 0;
+      let countGold = 0;
+      let countPlat = 0;
+      let countDiam = 0;
+
+      tbody.innerHTML = list.map((s, idx) => {
+        totalScore += s.score;
+        if (s.tier === 'Gold') countGold++;
+        else if (s.tier === 'Platinum') countPlat++;
+        else if (s.tier === 'Diamond') countDiam++;
+
+        const badgeClass = s.tier === 'Diamond' ? 'badge-diamond' : (s.tier === 'Platinum' ? 'badge-platinum' : 'badge-gold');
+
+        return `<tr>
+          <td>${idx + 1}</td>
+          <td><strong>${s.nis}</strong></td>
+          <td>${s.name}</td>
+          <td>${s.class}</td>
+          <td>${s.correctCount} / 5 Soal</td>
+          <td><strong style="color:var(--primary); font-size:15px;">${s.score}</strong></td>
+          <td><span class="badge ${badgeClass}">${s.tier}</span></td>
+          <td>${s.timestamp} WIB</td>
+          <td class="no-print">
+            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="viewStudentDetail('${s.nis}')" title="Lihat Rekap Siswa">👁️ Rekap</button>
+            <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="deleteStudent(${s.id})" title="Hapus">❌</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('statAvg').textContent = (totalScore / list.length).toFixed(1);
+      document.getElementById('statGold').textContent = countGold;
+      document.getElementById('statPlat').textContent = countPlat;
+      document.getElementById('statDiam').textContent = countDiam;
+    }
+
+    // View specific student review from dashboard table
+    function viewStudentDetail(nis) {
+      const list = getStoredStudents();
+      const s = list.find(item => item.nis === nis);
+      if (!s) return;
+
+      lastSubmittedNIS = nis;
+      switchTab('quiz');
+
+      document.getElementById('studentName').value = s.name;
+      document.getElementById('studentNIS').value = s.nis;
+
+      // Populate result box
+      document.getElementById('resStudentName').textContent = s.name;
+      document.getElementById('resStudentMeta').textContent = `NIS: ${s.nis} • Kelas: ${s.class}`;
+      document.getElementById('resScore').textContent = s.score;
+      document.getElementById('resCorrectDetail').textContent = `${s.correctCount} dari 5 Soal Benar (${s.score} Poin)`;
+
+      const tierClass = s.tier === 'Diamond' ? 'badge-diamond' : (s.tier === 'Platinum' ? 'badge-platinum' : 'badge-gold');
+      document.getElementById('resTierBadge').innerHTML = `<span class="badge ${tierClass}" style="font-size: 14px; padding: 6px 14px;">TIER ${s.tier.toUpperCase()}</span>`;
+
+      // Render questions review
+      const recapListEl = document.getElementById('recapQuestionsList');
+      const uAnswers = s.userAnswers || { q1: 'C', q2: 'B', q3: 'A', q4: 'B', q5: 'B' };
+
+      recapListEl.innerHTML = QUESTIONS_DATA.map(q => {
+        const uAns = uAnswers[`q${q.id}`];
+        const isRight = (uAns === q.correct);
+        const icon = isRight ? '✅' : '❌';
+        const statusText = isRight ? 'Tepat (+20 Poin)' : 'Kurang Tepat (0 Poin)';
+
+        return `<div class="recap-item ${isRight ? 'is-correct' : 'is-wrong'}">
+          <div class="recap-q-title">
+            <span>${icon} Soal ${q.id}: ${q.title}</span>
+            <span style="font-size: 12px; font-weight:700; color: ${isRight ? 'var(--diamond)' : '#dc2626'}">${statusText}</span>
+          </div>
+          <div style="font-size: 13px; color: #334155; margin-bottom: 6px;">
+            Jawaban Siswa: <strong>${uAns || '-'}. ${q.options[uAns] || '-'}</strong> | 
+            Kunci Benar: <strong style="color:var(--diamond);">${q.correct}. ${q.options[q.correct]}</strong>
+          </div>
+          <div class="recap-explanation">
+            <strong>💡 Pembahasan:</strong> ${q.explanation}
+          </div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('resultBox').style.display = 'block';
+      document.getElementById('resultBox').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Filter dashboard table
+    function filterTable() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const rows = document.querySelectorAll('#studentsTableBody tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
+      });
+    }
+
+    // Filter groups by student name/NIS
+    function filterGroups() {
+      const input = document.getElementById('searchGroupInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.group-card');
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (input.trim() === '') {
+          card.classList.remove('highlighted');
+          card.style.display = '';
+        } else if (text.includes(input)) {
+          card.classList.add('highlighted');
+          card.style.display = '';
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          card.classList.remove('highlighted');
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function deleteStudent(id) {
+      if (!confirm('Hapus data siswa ini?')) return;
+      const list = getStoredStudents().filter(s => s.id !== id);
+      saveStudents(list);
+    }
+
+    function clearAllData() {
+      if (!confirm('Apakah Anda yakin ingin menghapus seluruh data siswa di sistem?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      updateDashboard();
+      generateGroups();
+    }
+
+    // Load 15 Simulated Students for Teacher Demonstration
+    function loadSimulatedData() {
+      const mockStudents = [
+        { nis: '102401', name: 'Ahmad Fauzi', score: 40, correctCount: 2, tier: 'Gold', answers: { q1: 'C', q2: 'B', q3: 'B', q4: 'A', q5: 'A' } },
+        { nis: '102402', name: 'Budi Santoso', score: 20, correctCount: 1, tier: 'Gold', answers: { q1: 'A', q2: 'B', q3: 'B', q4: 'C', q5: 'A' } },
+        { nis: '102403', name: 'Citra Dewi', score: 60, correctCount: 3, tier: 'Platinum', answers: { q1: 'C', q2: 'B', q3: 'A', q4: 'A', q5: 'A' } },
+        { nis: '102404', name: 'Dimas Anggara', score: 60, correctCount: 3, tier: 'Platinum', answers: { q1: 'C', q2: 'B', q3: 'A', q4: 'A', q5: 'C' } },
+        { nis: '102405', name: 'Eka Saputra', score: 100, correctCount: 5, tier: 'Diamond', answers: { q1: 'C', q2: 'B', q3: 'A', q4: 'B', q5: 'B' } },
+        { nis: '102406', name: 'Fani Rahmawati', score: 40, correctCount: 2, tier: 'Gold', answers: { q1: 'C', q2: 'A', q3: 'B', q4: 'B', q5: 'A' } },
+        { nis: '102407', name: 'Gilang Ramadhan', score: 80, correctCount: 4, tier: 'Diamond', answers: { q1: 'C', q2: 'B', q3: 'A', q4: 'B', q5: 'A' } },
+        { nis: '102408', name: 'Hani Handayani', score: 60, correctCount: 3, tier: 'Platinum', answers: { q1: 'C', q2: 'B', q3: 'B', q4: 'B', q5: 'A' } },
+        { nis: '102409', name: 'Indra Lesmana', score: 40, correctCount: 2, tier: 'Gold', answers: { q1: 'B', q2: 'B', q3: 'A', q4: 'A', q5: 'A' } },
+        { nis: '102410', name: 'Joko Widodo', score: 60, correctCount: 3, tier: 'Platinum', answers: { q1: 'C', q2: 'B', q3: 'A', q4: 'C', q5: 'A' } },
+        { nis: '102411', name: 'Kurnia Mega', score: 100, correctCount: 5, tier: 'Diamond', answers: { q1: 'C', q2: 'B', q3: 'A', q4: 'B', q5: 'B' } },
+        { nis: '102412', name: 'Lestari Putri', score: 20, correctCount: 1, tier: 'Gold', answers: { q1: 'A', q2: 'B', q3: 'C', q4: 'A', q5: 'C' } },
+        { nis: '102413', name: 'Muhammad Rizky', score: 80, correctCount: 4, tier: 'Diamond', answers: { q1: 'C', q2: 'B', q3: 'A', q4: 'B', q5: 'C' } },
+        { nis: '102414', name: 'Nabila Syakieb', score: 60, correctCount: 3, tier: 'Platinum', answers: { q1: 'C', q2: 'B', q3: 'A', q4: 'C', q5: 'B' } },
+        { nis: '102415', name: 'Oki Setiana', score: 40, correctCount: 2, tier: 'Gold', answers: { q1: 'C', q2: 'A', q3: 'B', q4: 'A', q5: 'B' } }
+      ];
+
+      const list = mockStudents.map((s, idx) => ({
+        id: Date.now() + idx,
+        nis: s.nis,
+        name: s.name,
+        class: 'X RPL 1',
+        correctCount: s.correctCount,
+        score: s.score,
+        tier: s.tier,
+        userAnswers: s.answers,
+        timestamp: '07:45 WIB'
+      }));
+
+      saveStudents(list);
+      alert('15 Data simulasi murid RPL berhasil dimuat! Murid dan guru kini bisa melihat rekap nilai dan kelompok belajar.');
+      switchTab('dashboard');
+    }
+
+    // Generate Groups Algorithm
+    function generateGroups() {
+      const list = getStoredStudents();
+      const container = document.getElementById('groupsContainer');
+      const strategy = document.getElementById('groupStrategy').value;
+      const groupSize = parseInt(document.getElementById('groupSize').value) || 3;
+
+      if (list.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px; background: #f8fafc; border: 1px dashed var(--border); border-radius: var(--radius);">
+          Belum ada data siswa untuk dibentuk kelompok. Silakan muat simulasi di tab "Rekapitulasi".
+        </div>`;
+        return;
+      }
+
+      let groups = [];
+
+      if (strategy === 'heterogeneous') {
+        // STRATEGI TUTOR SEBAYA (HETEROGEN):
+        let leaders = list.filter(s => s.tier === 'Diamond' || s.tier === 'Platinum').sort((a,b) => b.score - a.score);
+        let members = list.filter(s => s.tier === 'Gold').sort(() => Math.random() - 0.5);
+
+        const totalGroups = Math.ceil(list.length / groupSize);
+
+        for (let i = 0; i < totalGroups; i++) {
+          groups.push({
+            name: `Kelompok ${i + 1} (Tutor Sebaya)`,
+            type: 'Heterogen',
+            mission: 'Proyek Kolaboratif: Menentukan Logika & Verifikasi Sistem PHP',
+            members: []
+          });
+        }
+
+        let gIdx = 0;
+        leaders.forEach(leader => {
+          groups[gIdx % totalGroups].members.push({ ...leader, isLeader: groups[gIdx % totalGroups].members.length === 0 });
+          gIdx++;
+        });
+
+        members.forEach(member => {
+          groups.sort((a, b) => a.members.length - b.members.length);
+          groups[0].members.push({ ...member, isLeader: false });
+        });
+
+      } else {
+        // STRATEGI HOMOGEN (SESUAI TIER KONTEN):
+        const diamonds = list.filter(s => s.tier === 'Diamond');
+        const platinums = list.filter(s => s.tier === 'Platinum');
+        const golds = list.filter(s => s.tier === 'Gold');
+
+        let chunk = (arr, size, namePrefix, mission) => {
+          let res = [];
+          for (let i = 0; i < arr.length; i += size) {
+            res.push({
+              name: `${namePrefix} ${res.length + 1}`,
+              type: 'Homogen',
+              mission: mission,
+              members: arr.slice(i, i + size).map((m, mIdx) => ({ ...m, isLeader: mIdx === 0 }))
+            });
+          }
+          return res;
+        };
+
+        groups = [
+          ...chunk(diamonds, groupSize, 'Kelompok Diamond', 'LKM Kasus Billing Parkir Bersarang (Nested If)'),
+          ...chunk(platinums, groupSize, 'Kelompok Platinum', 'LKM Kasus Kasir Diskon Swalayan (if...elseif...else)'),
+          ...chunk(golds, groupSize, 'Kelompok Gold', 'LKM Kasus Evaluasi Kelulusan Ujian Siswa (if...else)')
+        ];
+      }
+
+      // Render Cards
+      container.innerHTML = groups.map((g, idx) => {
+        const roles = ['Project Lead / Peer Tutor', 'Logic Flow Designer', 'PHP Code Implementer', 'Software Tester & QA'];
+
+        return `<div class="group-card">
+          <div class="group-header">
+            <div>
+              <div class="group-name">${g.name}</div>
+              <span style="font-size: 11px; color: var(--text-muted);">${g.type} • ${g.members.length} Siswa</span>
+            </div>
+            <span class="badge ${g.type === 'Heterogen' ? 'badge-platinum' : (g.name.includes('Diamond') ? 'badge-diamond' : (g.name.includes('Platinum') ? 'badge-platinum' : 'badge-gold'))}">
+              Tim ${idx + 1}
+            </span>
+          </div>
+
+          <div style="font-size: 12px; color: #1e40af; background: #eff6ff; padding: 8px 10px; border-radius: 6px; margin-bottom: 12px;">
+            <strong>Misi Proyek:</strong> ${g.mission}
+          </div>
+
+          <div style="flex: 1;">
+            ${g.members.map((m, mIdx) => {
+              const roleName = roles[mIdx] || 'Anggota Tim';
+              const badgeClass = m.tier === 'Diamond' ? 'badge-diamond' : (m.tier === 'Platinum' ? 'badge-platinum' : 'badge-gold');
+              const isCurrentUser = (lastSubmittedNIS && m.nis === lastSubmittedNIS);
+
+              return `<div class="member-item ${m.isLeader ? 'is-leader' : ''} ${isCurrentUser ? 'is-user' : ''}">
+                <div>
+                  <div style="font-weight: 700; color: #0f172a;">
+                    ${m.isLeader ? '👑 ' : ''}${m.name} ${isCurrentUser ? '<span style="color:#d97706; font-size:11px;">(Anda)</span>' : ''}
+                  </div>
+                  <div style="font-size: 11px; color: var(--text-muted);">
+                    NIS: ${m.nis} • Peran: <span style="color:var(--primary); font-weight:600;">${roleName}</span>
+                  </div>
+                </div>
+                <span class="badge ${badgeClass}" style="font-size: 11px;">${m.tier} (${m.score})</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // Export to CSV
+    function exportCSV() {
+      const list = getStoredStudents();
+      if (list.length === 0) {
+        alert('Tidak ada data siswa untuk diekspor!');
+        return;
+      }
+
+      let csv = 'No,NIS,Nama Siswa,Kelas,Jawaban Benar,Skor Akhir,Tier Diferensiasi,Waktu Selesai\n';
+      list.forEach((s, idx) => {
+        csv += `"${idx + 1}","${s.nis}","${s.name}","${s.class}","${s.correctCount}/5","${s.score}","${s.tier}","${s.timestamp}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Rekap_Asesmen_Awal_RPL_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    function exportGroupsCSV() {
+      const list = getStoredStudents();
+      if (list.length === 0) {
+        alert('Belum ada data kelompok!');
+        return;
+      }
+
+      let csv = 'Kelompok,Peran,Nama Siswa,NIS,Tier,Skor\n';
+      const cards = document.querySelectorAll('.group-card');
+      cards.forEach(card => {
+        const groupName = card.querySelector('.group-name').textContent;
+        const members = card.querySelectorAll('.member-item');
+        members.forEach(m => {
+          const name = m.querySelector('div > div:first-child').textContent.replace('👑', '').replace('(Anda)', '').trim();
+          const sub = m.querySelector('div > div:last-child').textContent;
+          const tier = m.querySelector('.badge').textContent.trim();
+          csv += `"${groupName}","${sub}","${name}","${tier}"\n`;
+        });
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Pembagian_Kelompok_PjBL_RPL_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    // Auto Timer 5 Minutes
+    let timeLeft = 300;
+    const timerBadge = document.getElementById('timerBadge');
+    setInterval(() => {
+      if (timeLeft > 0) {
+        timeLeft--;
+        const min = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+        const sec = String(timeLeft % 60).padStart(2, '0');
+        timerBadge.textContent = `⏱️ Waktu Sisa: ${min}:${sec}`;
+      } else {
+        timerBadge.textContent = `⏱️ Waktu Habis!`;
+        timerBadge.style.background = '#fee2e2';
+        timerBadge.style.color = '#dc2626';
+      }
+    }, 1000);
+
+    // Initial Load
+    updateDashboard();
+  </script>
+</body>
+</html>
